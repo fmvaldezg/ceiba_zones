@@ -83,6 +83,22 @@
             width: 16px;
             height: 16px;
         }
+
+        .maplibregl-popup {
+            max-width: 400px;
+            font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        }
+        
+        .maplibregl-popup-content {
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .popup-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 <body>
@@ -168,7 +184,7 @@
     };
     
     // Define the zoom level increase for search results
-    const searchResultZoomIncrease = 3; // Increase zoom by 2 levels for closer view
+    const searchResultZoomIncrease = 3; // Increase zoom by 3 levels for closer view
     
     map.on('load', () => {
         // Add zones to the map
@@ -231,7 +247,45 @@
                 'fill-opacity': 0.7
             }
         });
+        
+        // Add popup functionality for each zone
+        addZonePopup('asez', '#1b9e77');
+        addZonePopup('asez_horn', '#e7298a');
+        addZonePopup('ptssd', '#d95f02');
+        addZonePopup('juniata', '#7570b3');
     });
+    
+    // Function to add popup functionality to a zone layer
+    function addZonePopup(layerId, color) {
+        // When a click event occurs on a feature in the layer, open a popup at the
+        // location of the click, with description HTML from the click event's properties.
+        map.on('click', layerId, (e) => {
+            // Get the clicked feature
+            const feature = e.features[0];
+            
+            // Get the zone name from properties
+            const zoneName = feature.properties.ZONE_NAME || layerId.toUpperCase();
+            
+            // Create popup content
+            const popupContent = `<div class="popup-title" style="color:${color}">${zoneName}</div>`;
+            
+            // Create a popup
+            new maplibregl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(popupContent)
+                .addTo(map);
+        });
+
+        // Change the cursor to a pointer when the mouse is over the layer.
+        map.on('mouseenter', layerId, () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        // Change it back to a default cursor when it leaves.
+        map.on('mouseleave', layerId, () => {
+            map.getCanvas().style.cursor = '';
+        });
+    }
 
     // Create the geocoder
     const geocoderApi = {
@@ -337,10 +391,9 @@
         const point = [lng, lat];
         const zones = [
             { id: 'asez', name: 'ASEZ' },
-            { id: 'asez_horn', name: 'ASEZ Horn' },
+            { id: 'asez_horn', name: 'ASEZ cuerno' },
             { id: 'ptssd', name: 'PTSSD' },
             { id: 'juniata', name: 'JUNIATA' }
-            
         ];
         
         const resultsContainer = document.getElementById('zone-results');
