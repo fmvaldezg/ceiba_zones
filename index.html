@@ -168,7 +168,7 @@
     };
     
     // Define the zoom level increase for search results
-    const searchResultZoomIncrease = 2; // Increase zoom by 2 levels for closer view
+    const searchResultZoomIncrease = 3; // Increase zoom by 2 levels for closer view
     
     map.on('load', () => {
         // Add zones to the map
@@ -183,6 +183,21 @@
             'layout': {},
             'paint': {
                 'fill-color': '#1b9e77',
+                'fill-opacity': 0.7
+            }
+        });
+
+        map.addSource('asez_horn', {
+            'type': 'geojson',
+            'data': 'https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/data/ASEZ_horn.geojson'
+        });
+        map.addLayer({
+            'id': 'asez',
+            'type': 'fill',
+            'source': 'asez',
+            'layout': {},
+            'paint': {
+                'fill-color': '#e7298a',
                 'fill-opacity': 0.7
             }
         });
@@ -322,8 +337,10 @@
         const point = [lng, lat];
         const zones = [
             { id: 'asez', name: 'ASEZ' },
+            { id: 'asez_horn', name: 'ASEZ Horn' },
             { id: 'ptssd', name: 'PTSSD' },
             { id: 'juniata', name: 'JUNIATA' }
+            
         ];
         
         const resultsContainer = document.getElementById('zone-results');
