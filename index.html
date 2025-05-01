@@ -7,9 +7,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.css' />
     <script src='https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.js'></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
     <style>
         body { margin: 0; padding: 0; }
         html, body, #map { height: 100%; }
+        
+        #zone-info {
+            position: absolute;
+            top: 110px;
+            right: 10px;
+            z-index: 999;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            width: 200px;
+            font-family: sans-serif;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        
+        .zone-item {
+            margin-bottom: 8px;
+        }
+        
+        .zone-name {
+            font-weight: bold;
+        }
+        
+        .zone-result {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin-top: 3px;
+        }
+        
+        .inside {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
+        
+        .outside {
+            background: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .empty-state {
+            color: #757575;
+            font-style: italic;
+            text-align: center;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -20,6 +66,13 @@
     href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.5.0/dist/maplibre-gl-geocoder.css"
 />
 <div id="map"></div>
+<div id="zone-info">
+    <h4 style="margin-top: 0; margin-bottom: 10px;">Zone Check Results</h4>
+    <div id="zone-results">
+        <div class="empty-state">Search for an address to check zones</div>
+    </div>
+</div>
+
 <script>
     const map = new maplibregl.Map({
         container: 'map',
@@ -60,7 +113,12 @@
         bearing: 0,
         canvasContextAttributes: {antialias: true}
     });
+
+    // Create marker for search results
+    const marker = new maplibregl.Marker();
+    
     map.on('load', () => {
+        // Add zones to the map
         map.addSource('asez', {
             'type': 'geojson',
             'data': 'https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/data/ASEZ.geojson'
@@ -75,6 +133,7 @@
                 'fill-opacity': 0.7
             }
         });
+        
         map.addSource('ptssd', {
             'type': 'geojson',
             'data': 'https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/data/PTSSD.geojson'
@@ -89,6 +148,7 @@
                 'fill-opacity': 0.7
             }
         });
+        
         map.addSource('juniata', {
             'type': 'geojson',
             'data': 'https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/data/JUNIATA.geojson'
@@ -105,22 +165,22 @@
         });
     });
 
+    // Create the geocoder
     const geocoderApi = {
         forwardGeocode: async (config) => {
             const features = [];
             try {
-                const request =
-            `https://nominatim.openstreetmap.org/search?q=${
-                config.query
-            }&format=geojson&polygon_geojson=1&addressdetails=1`;
+                const request = `https://nominatim.openstreetmap.org/search?q=${
+                    config.query
+                }&format=geojson&polygon_geojson=1&addressdetails=1`;
                 const response = await fetch(request);
                 const geojson = await response.json();
                 for (const feature of geojson.features) {
                     const center = [
                         feature.bbox[0] +
-                    (feature.bbox[2] - feature.bbox[0]) / 2,
+                        (feature.bbox[2] - feature.bbox[0]) / 2,
                         feature.bbox[1] +
-                    (feature.bbox[3] - feature.bbox[1]) / 2
+                        (feature.bbox[3] - feature.bbox[1]) / 2
                     ];
                     const point = {
                         type: 'Feature',
@@ -145,11 +205,88 @@
             };
         }
     };
-    map.addControl(
-        new MaplibreGeocoder(geocoderApi, {
-            maplibregl
-        })
-    );
+    
+    // Add the geocoder to the map
+    const geocoder = new MaplibreGeocoder(geocoderApi, {
+        maplibregl
+    });
+    map.addControl(geocoder);
+
+    // Function to check if a point is in a zone
+    function checkPointInZone(point, sourceId) {
+        const source = map.getSource(sourceId);
+        if (!source) {
+            console.error(`Source ${sourceId} not found`);
+            return false;
+        }
+        
+        try {
+            // Get the features at the point location
+            const features = map.queryRenderedFeatures(
+                map.project(point), 
+                { layers: [sourceId] }
+            );
+            
+            // If there are features, the point is inside the zone
+            return features.length > 0;
+        } catch (e) {
+            console.error(`Error checking point in ${sourceId}:`, e);
+            return false;
+        }
+    }
+
+    // Function to update the zone info div
+    function updateZoneInfo(lng, lat) {
+        const point = [lng, lat];
+        const zones = [
+            { id: 'asez', name: 'ASEZ' },
+            { id: 'ptssd', name: 'PTSSD' },
+            { id: 'juniata', name: 'JUNIATA' }
+        ];
+        
+        const resultsContainer = document.getElementById('zone-results');
+        resultsContainer.innerHTML = '';
+        
+        zones.forEach(zone => {
+            const isInside = checkPointInZone(point, zone.id);
+            
+            const zoneDiv = document.createElement('div');
+            zoneDiv.className = 'zone-item';
+            
+            const zoneName = document.createElement('div');
+            zoneName.className = 'zone-name';
+            zoneName.textContent = zone.name;
+            
+            const zoneResult = document.createElement('div');
+            zoneResult.className = `zone-result ${isInside ? 'inside' : 'outside'}`;
+            zoneResult.textContent = isInside ? 'Yes' : 'No';
+            
+            zoneDiv.appendChild(zoneName);
+            zoneDiv.appendChild(zoneResult);
+            resultsContainer.appendChild(zoneDiv);
+        });
+    }
+
+    // Add event listener for geocoder results
+    geocoder.on('result', e => {
+        const coords = e.result.center;
+        
+        // Place the marker
+        marker.setLngLat(coords).addTo(map);
+        
+        // Update the zone info
+        // Wait for the map to render completely
+        setTimeout(() => {
+            updateZoneInfo(coords[0], coords[1]);
+        }, 300);
+    });
+    
+    // Hide zone info when clearing search
+    geocoder.on('clear', () => {
+        const resultsContainer = document.getElementById('zone-results');
+        resultsContainer.innerHTML = '<div class="empty-state">Search for an address to check zones</div>';
+        marker.remove();
+    });
 </script>
 </body>
 </html>
