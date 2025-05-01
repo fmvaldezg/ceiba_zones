@@ -56,6 +56,33 @@
             text-align: center;
             margin: 10px 0;
         }
+        
+        #reset-button {
+            position: absolute;
+            bottom: 20px;
+            right: 10px;
+            z-index: 999;
+            background: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            font-family: sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        #reset-button:hover {
+            background: #f5f5f5;
+        }
+        
+        #reset-button svg {
+            width: 16px;
+            height: 16px;
+        }
     </style>
 </head>
 <body>
@@ -72,6 +99,14 @@
         <div class="empty-state">Search for an address to check zones</div>
     </div>
 </div>
+<button id="reset-button">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0z"></path>
+        <path d="M12 8v4l2 2"></path>
+        <path d="M3 3l18 18"></path>
+    </svg>
+    Reset Map
+</button>
 
 <script>
     const map = new maplibregl.Map({
@@ -114,8 +149,16 @@
         canvasContextAttributes: {antialias: true}
     });
 
-    // Create marker for search results
+    // Add a marker for the selected location
     const marker = new maplibregl.Marker();
+    
+    // Set initial map parameters for reset function
+    const initialMapSettings = {
+        center: [-75.16384, 39.98198],
+        zoom: 11.58,
+        pitch: 0,
+        bearing: 0
+    };
     
     map.on('load', () => {
         // Add zones to the map
@@ -281,11 +324,26 @@
         }, 300);
     });
     
-    // Hide zone info when clearing search
-    geocoder.on('clear', () => {
+    // Add reset button functionality
+    document.getElementById('reset-button').addEventListener('click', function() {
+        // Reset the map to default view
+        map.flyTo({
+            center: [-75.16384, 39.98198],
+            zoom: 11.58,
+            pitch: 0,
+            bearing: 0,
+            duration: 1000
+        });
+        
+        // Clear the geocoder
+        geocoder.clear();
+        
+        // Remove marker if it exists
+        marker.remove();
+        
+        // Reset zone results to empty state
         const resultsContainer = document.getElementById('zone-results');
         resultsContainer.innerHTML = '<div class="empty-state">Search for an address to check zones</div>';
-        marker.remove();
     });
 </script>
 </body>
