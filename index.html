@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Geocode with Nominatim</title>
-    <meta property="og:description" content="Geocode with Nominatim and the maplibre-gl-geocoder plugin." />
+    <title>CEIBA zones</title>
+    <meta property="og:description" content="Geocoder app for CIEBA" />
     <meta charset='utf-8'>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel='stylesheet' href='https://unpkg.com/maplibre-gl@5.4.0/dist/maplibre-gl.css' />
@@ -59,6 +59,50 @@
         pitch: 0,
         bearing: 0,
         canvasContextAttributes: {antialias: true}
+    });
+    map.on('load', () => {
+        map.addSource('asez', {
+            'type': 'geojson',
+            'data': 'https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/data/ASEZ.geojson'
+        });
+        map.addLayer({
+            'id': 'asez',
+            'type': 'fill',
+            'source': 'asez',
+            'layout': {},
+            'paint': {
+                'fill-color': '#088',
+                'fill-opacity': 0.8
+            }
+        });
+        map.addSource('ptssd', {
+            'type': 'geojson',
+            'data': 'https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/data/PTSSD.geojson'
+        });
+        map.addLayer({
+            'id': 'ptssd',
+            'type': 'fill',
+            'source': 'ptssd',
+            'layout': {},
+            'paint': {
+                'fill-color': '#088',
+                'fill-opacity': 0.8
+            }
+        });
+        map.addSource('juniata', {
+            'type': 'geojson',
+            'data': 'https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/data/JUNIATA.geojson'
+        });
+        map.addLayer({
+            'id': 'juniata',
+            'type': 'fill',
+            'source': 'juniata',
+            'layout': {},
+            'paint': {
+                'fill-color': '#088',
+                'fill-opacity': 0.8
+            }
+        });
     });
 
     const geocoderApi = {
