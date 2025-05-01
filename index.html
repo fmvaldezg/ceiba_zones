@@ -109,6 +109,12 @@
 </button>
 
 <script>
+    // Define Philadelphia boundaries for geocoder
+    const philadelphiaBounds = [
+        [-75.2803, 39.8722], // Southwest coordinates [lng, lat]
+        [-74.9557, 40.1379]  // Northeast coordinates [lng, lat]
+    ];
+
     const map = new maplibregl.Map({
         container: 'map',
         // Use a minimalist raster style
@@ -146,7 +152,8 @@
         zoom: 11.58,
         pitch: 0,
         bearing: 0,
-        canvasContextAttributes: {antialias: true}
+        canvasContextAttributes: {antialias: true},
+        maxBounds: philadelphiaBounds // Restrict map panning to Philadelphia
     });
 
     // Add a marker for the selected location
@@ -159,6 +166,9 @@
         pitch: 0,
         bearing: 0
     };
+    
+    // Define the zoom level increase for search results
+    const searchResultZoomIncrease = 2; // Increase zoom by 2 levels for closer view
     
     map.on('load', () => {
         // Add zones to the map
@@ -213,11 +223,19 @@
         forwardGeocode: async (config) => {
             const features = [];
             try {
+                // Add Philadelphia to the query to restrict results
+                const phillyQuery = `${config.query}, Philadelphia, PA`;
+                
                 const request = `https://nominatim.openstreetmap.org/search?q=${
-                    config.query
-                }&format=geojson&polygon_geojson=1&addressdetails=1`;
+                    encodeURIComponent(phillyQuery)
+                }&format=geojson&polygon_geojson=1&addressdetails=1&bounded=1&viewbox=${
+                    philadelphiaBounds[0][0]},${philadelphiaBounds[0][1]},${philadelphiaBounds[1][0]},${philadelphiaBounds[1][1]
+                }&countrycodes=us`;
+                
                 const response = await fetch(request);
                 const geojson = await response.json();
+                
+                // Filter results to only include those within Philadelphia bounds
                 for (const feature of geojson.features) {
                     const center = [
                         feature.bbox[0] +
@@ -225,19 +243,31 @@
                         feature.bbox[1] +
                         (feature.bbox[3] - feature.bbox[1]) / 2
                     ];
-                    const point = {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: center
-                        },
-                        place_name: feature.properties.display_name,
-                        properties: feature.properties,
-                        text: feature.properties.display_name,
-                        place_type: ['place'],
-                        center
-                    };
-                    features.push(point);
+                    
+                    // Check if the center is within Philadelphia bounds
+                    if (center[0] >= philadelphiaBounds[0][0] && center[0] <= philadelphiaBounds[1][0] &&
+                        center[1] >= philadelphiaBounds[0][1] && center[1] <= philadelphiaBounds[1][1]) {
+                        
+                        // Add "Philadelphia, PA" to the display name if it's not already there
+                        let displayName = feature.properties.display_name;
+                        if (!displayName.includes('Philadelphia') && !displayName.includes('Phila')) {
+                            displayName += ', Philadelphia, PA';
+                        }
+                        
+                        const point = {
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Point',
+                                coordinates: center
+                            },
+                            place_name: displayName,
+                            properties: feature.properties,
+                            text: displayName,
+                            place_type: ['place'],
+                            center
+                        };
+                        features.push(point);
+                    }
                 }
             } catch (e) {
                 console.error(`Failed to forwardGeocode with error: ${e}`);
@@ -251,7 +281,16 @@
     
     // Add the geocoder to the map
     const geocoder = new MaplibreGeocoder(geocoderApi, {
-        maplibregl
+        maplibregl,
+        flyTo: false,
+        placeholder: 'Search for Philadelphia addresses',
+        countries: 'us',
+        bbox: [
+            philadelphiaBounds[0][0],
+            philadelphiaBounds[0][1],
+            philadelphiaBounds[1][0],
+            philadelphiaBounds[1][1]
+        ]
     });
     map.addControl(geocoder);
 
@@ -317,6 +356,16 @@
         // Place the marker
         marker.setLngLat(coords).addTo(map);
         
+        // Move map to the result location with a slight zoom in
+        const currentZoom = map.getZoom();
+        const newZoom = Math.min(currentZoom + searchResultZoomIncrease, 18); // Limit zoom to level 18
+        
+        map.flyTo({
+            center: coords,
+            zoom: newZoom,
+            duration: 1000
+        });
+        
         // Update the zone info
         // Wait for the map to render completely
         setTimeout(() => {
@@ -324,14 +373,21 @@
         }, 300);
     });
     
+    // Hide zone info when clearing search
+    geocoder.on('clear', () => {
+        const resultsContainer = document.getElementById('zone-results');
+        resultsContainer.innerHTML = '<div class="empty-state">Search for an address to check zones</div>';
+        marker.remove();
+    });
+    
     // Add reset button functionality
     document.getElementById('reset-button').addEventListener('click', function() {
         // Reset the map to default view
         map.flyTo({
-            center: [-75.16384, 39.98198],
-            zoom: 11.58,
-            pitch: 0,
-            bearing: 0,
+            center: initialMapSettings.center,
+            zoom: initialMapSettings.zoom,
+            pitch: initialMapSettings.pitch,
+            bearing: initialMapSettings.bearing,
             duration: 1000
         });
         
