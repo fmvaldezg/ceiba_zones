@@ -2,6 +2,9 @@
 
 This repository contains data and files to build an interactive webmap allowing users to enter a street address and identify whether the location is inside the benefits zone.
 
+## Primary Purpose
+The application is a **zone checker tool for Philadelphia** that allows users to search for addresses and determine which geographic zones they fall within.
+
 ### Files
 
 - data
@@ -26,4 +29,43 @@ The `data` folder contains six files representing the benefit zones.
 | Penn Treaty Special Services District | PTSSD.geojson         | https://penntreatyssd.org/                                                                                                              |
 | Sustainable Communities Initiative    | SCI.geojson           | https://www.lisc.org/philly/where-we-work/                                                                                              |
 
+
+## The map
+
+The file `index.html` contains the code that generates the webmap at [https://felipevaldez.com/ceiba_zones/](https://felipevaldez.com/ceiba_zones/).
+
+It uses **MapLibre GL JS** to create an interactive web mapping application along with **Turf.js** for spatial analysis.
+
+## Key Functions of MapLibre GL JS:
+
+**1. Interactive Base Map**
+- Renders an OpenStreetMap-based raster tile layer
+- Provides pan, zoom, and navigation controls
+- Restricts the map view to Philadelphia boundaries
+
+**2. Geographic Zone Visualization** 
+- Displays 4 colored polygon zones overlaid on the map:
+  - ASEZ (green) `#1b9e77`
+  - ASEZ cuerno/horn (pink) `#e7298a`
+  - PTSSD (orange) `#d95f02`
+  - JUNIATA (purple) `#7570b3`
+- Makes zones clickable with popup information
+
+**3. Address Geocoding Integration**
+- Integrates with MapLibre GL Geocoder plugin
+- Converts address searches into map coordinates
+- Places markers at searched locations
+- Automatically zooms to search results
+
+**4. User Interface Controls**
+- Provides a reset button to return to default map view
+- Shows zone check results in a sidebar panel
+- Handles user interactions like clicks and searches
+
+## Key Functions of Turf.js:
+
+**1. Spatial Analysis**
+- Performs point-in-polygon analysis to determine if searched addresses fall within any of the defined zones
+- Updates a results panel showing "Yes/No" for each zone
+- Uses `queryRenderedFeatures()` to detect spatial relationships
 
