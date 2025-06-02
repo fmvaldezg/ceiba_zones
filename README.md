@@ -7,15 +7,6 @@ The application is a **zone checker tool for Philadelphia** that allows users to
 
 ### Files
 
-- data
-  - ASEZ.geojson
-  - ASEZ_horn.geojson
-  - ASEZ_original.geojson
-  - JUNIATA.geojson
-  - PTSSD.geojson
-  - SCI.geojson
-- index.html
-
 ```bash
 ├── data
 │   ├── ASEZ.geojson
