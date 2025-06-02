@@ -36,7 +36,7 @@ The file `index.html` contains the code that generates the webmap at [https://fe
 
 It uses **MapLibre GL JS** to create an interactive web mapping application along with **Turf.js** for spatial analysis.
 
-## Key Functions of MapLibre GL JS:
+### Key Functions of MapLibre GL JS:
 
 **1. Interactive Base Map**
 - Renders an OpenStreetMap-based raster tile layer
@@ -62,10 +62,14 @@ It uses **MapLibre GL JS** to create an interactive web mapping application alon
 - Shows zone check results in a sidebar panel
 - Handles user interactions like clicks and searches
 
-## Key Functions of Turf.js:
+### Key Functions of Turf.js:
 
 **1. Spatial Analysis**
 - Performs point-in-polygon analysis to determine if searched addresses fall within any of the defined zones
 - Updates a results panel showing "Yes/No" for each zone
 - Uses `queryRenderedFeatures()` to detect spatial relationships
+
+## Updating the map
+
+
 
