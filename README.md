@@ -77,5 +77,25 @@ It uses **MapLibre GL JS** to create an interactive web mapping application alon
 
 ## Updating the map
 
+You can update the map by:
+
+1. Adding a new zone:
+   - Upload the file (`.geojson`) to the `data` folder
+   - Copy the raw ulr for the file
+   - In the `index.html` file:
+     - add a new source with `map.addSource()` (see line 190)
+     - add a new layer using `map.addLayer()`
+     - add the popup functionality for the zone (see line 252)
+     - add the new zone to the Zone Info `div` (see line 392)
+2. Replacing an existing zone:
+   - Remove the zone you want to replace from the `data` folder
+   - Upload the file containing the updated zone (keep the original zone name so the `index.html` can read it without having to modify the code)
+3. Removing an existing zone:
+   - Remove the zone from the `data` folder
+   - Remove the source and layer for the zone in the `index.html` file
+  
+> [!CAUTION]
+> Always use geojson files to represent the zone polygons.
+
 
 
