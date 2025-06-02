@@ -16,6 +16,21 @@ The application is a **zone checker tool for Philadelphia** that allows users to
   - SCI.geojson
 - index.html
 
+```bash
+├── data
+│   ├── ASEZ.geojson
+│   ├── ASEZ_horn.geojson
+│   ├── ASEZ_original.geojson
+│   ├── JUNIATA.geojson
+│   ├── PTSSD.geojson
+│   └── SCI.geojson
+├── .gitattributes
+├── .gitignore
+├── LICENSE
+├── README.md
+└── index.html
+```
+
 ## Data
 
 The `data` folder contains six files representing the benefit zones. 
