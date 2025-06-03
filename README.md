@@ -97,5 +97,25 @@ You can update the map by:
 > [!CAUTION]
 > Always use geojson files to represent the zone polygons.
 
+# Deploying the map from a new account
+
+To deploy this map using you own account follow this steps:
+
+1. You will need a [github.com](https://github.com/signup) account.
+2. Logged in to your github account, navigate to [this repository](https://github.com/fmvaldezg/ceiba_zones)
+3. Click on 'Fork' and the select 'Create a new fork'.
+![](https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/img/screenshot1.png)
+3. Type a new name for your repository (or keep the original) and then click 'Create fork'
+![](https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/img/screenshot2.png)
+4. Go to 'Settings' and select the 'Pages' menu on the left side.
+![](https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/img/screenshot3.png)
+5. On the 'Branch' section, select 'Main' on the dropdown menu.
+![](https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/img/screenshot4.png)
+6. Click 'Save' and wait a couple minutes.
+![](https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/img/screenshot5.png)
+7. After refreshing the page, you will see the url for your webmap. Click on 'Visit site' to see iut live.
+![](https://raw.githubusercontent.com/fmvaldezg/ceiba_zones/main/img/screenshot6.png)
+
+Everytime you make changes to the `index.html` file or your repository, the webmap will be automatically updated.
 
 
